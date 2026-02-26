@@ -1,0 +1,16 @@
+{
+  "name": "Trivial ATM",
+  "short_name": "Trivial ATM",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#F2F2F7",
+  "theme_color": "#272E61",
+  "icons": [
+    {
+      "src": "icono_trivial.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

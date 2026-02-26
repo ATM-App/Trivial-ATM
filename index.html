@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Trivial ATM</title>
+    
+    <link rel="icon" href="icono_trivial.jpg?v=2" type="image/jpeg">
+    <link rel="shortcut icon" href="icono_trivial.jpg?v=2" type="image/jpeg">
+    <link rel="apple-touch-icon" href="icono_trivial.jpg?v=2">
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#272E61">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="setup-screen" class="screen active">
+        <img src="ESCUDO ATM.png" alt="Escudo ATM" class="logo animated-logo" onerror="this.style.display='none'">
+        <h1>TRIVIAL ATM</h1>
+        
+        <div class="ios-card">
+            <h2>Participantes 👥</h2>
+            <p style="font-size: 0.8rem; color: #8E8E93; margin-bottom: 10px;">Añade varios separados por comas.</p>
+            <div class="input-group">
+                <input type="text" id="player-name" placeholder="Ej: Koke, Griezmann...">
+                <button id="add-player-btn" class="ios-btn-small">+</button>
+            </div>
+            <ul id="players-list"></ul>
+        </div>
+
+        <div class="ios-card">
+            <h2>Configuración de Grupos 🎯</h2>
+            <label for="num-groups" style="display:block; margin-bottom: 5px; font-weight: 600;">Número de grupos:</label>
+            <input type="number" id="num-groups" min="2" max="11" value="2">
+        </div>
+
+        <div class="ios-card rules-card">
+            <h2>Sistema de Puntuación 📜</h2>
+            <div class="rules-container">
+                <div class="rule-column">
+                    <h3>🌍 PAÍSES (4 Puntos)</h3>
+                    <ul>
+                        <li><span>Nombre del País</span> <strong>1 pt</strong></li>
+                        <li><span>Capital</span> <strong>1 pt</strong></li>
+                        <li><span>Equipo</span> <strong>1 pt</strong></li>
+                        <li><span>Jugador del País</span> <strong>1 pt</strong></li>
+                    </ul>
+                </div>
+                <div class="rule-column">
+                    <h3>🛡️ EQUIPOS (4 Puntos)</h3>
+                    <ul>
+                        <li><span>Nombre del Equipo</span> <strong>1 pt</strong></li>
+                        <li><span>Jugador</span> <strong>1 pt</strong></li>
+                        <li><span>País del Equipo</span> <strong>1 pt</strong></li>
+                        <li><span>Liga</span> <strong>1 pt</strong></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <button id="trigger-reveal-btn" class="ios-btn primary floating-btn">🎲 Crear Equipos</button>
+    </div>
+
+    <div id="group-reveal-screen" class="screen">
+        <h1>¡Equipos Formados! 🤝</h1>
+        <p style="text-align: center; margin-bottom: 20px; color: #8E8E93;">Conozcan a sus compañeros</p>
+        <div id="reveal-container"></div>
+        <button id="start-game-btn" class="ios-btn primary floating-btn">🚀 ¡Comenzar la Partida!</button>
+    </div>
+
+    <div id="game-screen" class="screen game-layout">
+        
+        <aside class="sidebar" id="sidebar-left">
+            <h3>📊 Clasificación</h3>
+            <div id="score-list-left" class="sidebar-list"></div>
+        </aside>
+
+        <main class="main-content">
+            <div class="header">
+                <h2 id="current-team-name">Turno del Equipo</h2>
+                <div id="current-turn-score" style="font-size: 1.2rem; font-weight: bold;"></div>
+            </div>
+
+            <div class="question-container">
+                <img id="question-image" src="" alt="Pregunta">
+            </div>
+
+            <div class="game-controls">
+                <button id="score-btn" class="ios-btn primary">➕ Añadir Puntaje</button>
+                <button id="next-turn-btn" class="ios-btn secondary hidden">⏭️ Siguiente Turno</button>
+            </div>
+        </main>
+
+        <aside class="sidebar" id="sidebar-right">
+            <div id="score-list-right" class="sidebar-list" style="margin-top: 38px;"></div>
+        </aside>
+
+        <div class="mobile-footer-actions">
+             <button id="end-game-btn" class="ios-btn danger-solid">🚪 Finalizar Partida</button>
+        </div>
+    </div>
+
+    <div id="podium-screen" class="screen">
+        <h1>🏆 Clasificación Final 🏆</h1>
+        <div class="podium-container">
+            <div class="podium-spot silver" id="spot-silver">
+                <h3 id="silver-name">Plata</h3>
+                <div class="members-list" id="silver-members"></div>
+                <div class="bar">2</div>
+                <p id="silver-score">0 pts</p>
+            </div>
+            <div class="podium-spot gold" id="spot-gold">
+                <h3 id="gold-name">Oro</h3>
+                <div class="members-list" id="gold-members"></div>
+                <div class="bar">1</div>
+                <p id="gold-score">0 pts</p>
+            </div>
+            <div class="podium-spot bronze" id="spot-bronze">
+                <h3 id="bronze-name">Bronce</h3>
+                <div class="members-list" id="bronze-members"></div>
+                <div class="bar">3</div>
+                <p id="bronze-score">0 pts</p>
+            </div>
+        </div>
+        <button id="restart-btn" class="ios-btn primary">🔄 Jugar de Nuevo</button>
+    </div>
+
+    <div id="score-modal" class="modal-overlay">
+        <div class="modal-content ios-card">
+            <h2 id="modal-title">🎯 Asignar Puntos</h2>
+            <div id="scoring-fields"></div>
+            <button id="save-score-btn" class="ios-btn primary" style="margin-top: 15px;">💾 Guardar</button>
+            <button id="close-modal-btn" class="ios-btn text-only">Cancelar</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
