@@ -6,9 +6,7 @@
     <title>Trivial ATM</title>
     
     <link rel="icon" href="icono_trivial.jpg?v=2" type="image/jpeg">
-    <link rel="shortcut icon" href="icono_trivial.jpg?v=2" type="image/jpeg">
     <link rel="apple-touch-icon" href="icono_trivial.jpg?v=2">
-    
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#272E61">
     
@@ -88,11 +86,20 @@
                 <div id="current-turn-score" style="font-size: 1.2rem; font-weight: bold;"></div>
             </div>
 
+            <div class="timer-container">
+                <div id="timer-bar" class="timer-bar"></div>
+                <span id="timer-text">50s</span>
+            </div>
+            
+            <div id="var-indicator" class="var-indicator hidden">📺 ¡VAR ACTIVADO! PUNTOS x2</div>
+
             <div class="question-container">
                 <img id="question-image" src="" alt="Pregunta">
             </div>
 
             <div class="game-controls">
+                <button id="var-btn" class="btn-var">📺 VAR: DOBLE O NADA</button>
+                
                 <button id="score-btn" class="ios-btn primary">➕ Añadir Puntaje</button>
                 <button id="next-turn-btn" class="ios-btn secondary hidden">⏭️ Siguiente Turno</button>
             </div>
@@ -138,6 +145,14 @@
             <div id="scoring-fields"></div>
             <button id="save-score-btn" class="ios-btn primary" style="margin-top: 15px;">💾 Guardar</button>
             <button id="close-modal-btn" class="ios-btn text-only">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="red-card-modal" class="modal-overlay">
+        <div class="red-card-container">
+            <div class="red-card-visual">🟥</div>
+            <h2 class="red-card-text">¡TARJETA ROJA!</h2>
+            <p class="red-card-subtext">0 Puntos obtenidos</p>
         </div>
     </div>
 
