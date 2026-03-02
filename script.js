@@ -1,4 +1,3 @@
-// --- CONFIGURACIÓN FIREBASE CLÁSICA ---
 const firebaseConfig = {
     apiKey: "AIzaSyDjq4rqhnuYt7I3PJoe_OuuZQo1G8L245I",
     authDomain: "trivial-atm.firebaseapp.com",
@@ -18,12 +17,11 @@ if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 }
 
-// --- PREVENIR RECARGA ACCIDENTAL OFICIAL ---
+// Prevenir refresco accidental
 window.addEventListener('beforeunload', function (e) {
-    // Solo mostramos alerta si la pantalla de juego está activa
     if (document.getElementById('game-screen').classList.contains('active')) {
         e.preventDefault(); 
-        e.returnValue = ''; // Requerido por navegadores modernos para mostrar el popup
+        e.returnValue = ''; 
     }
 });
 
@@ -61,11 +59,10 @@ const startGameBtn = document.getElementById('start-game-btn');
 
 const scoreBtn = document.getElementById('score-btn');
 const varBtn = document.getElementById('var-btn');
-const scoringPanel = document.getElementById('scoring-panel'); // NUEVO: Panel Integrado
+const scoringPanel = document.getElementById('scoring-panel'); 
 const varIndicator = document.getElementById('var-indicator');
 const nextTurnBtn = document.getElementById('next-turn-btn');
 
-// --- LÓGICA JUGADORES ---
 addPlayerBtn.addEventListener('click', () => {
     const inputVal = playerNameInput.value.trim();
     if (inputVal) {
@@ -77,7 +74,6 @@ playerNameInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') add
 function updatePlayersList() { playersList.innerHTML = players.map((p, index) => `<li><span>${p}</span><button class="delete-btn" onclick="removePlayer(${index})">✕</button></li>`).join(''); }
 window.removePlayer = function(index) { players.splice(index, 1); updatePlayersList(); };
 
-// --- CREAR GRUPOS ---
 triggerRevealBtn.addEventListener('click', () => {
     const numGroups = parseInt(document.getElementById('num-groups').value);
     if (players.length < numGroups) { alert('Faltan jugadores para rellenar los grupos.'); return; }
@@ -119,7 +115,6 @@ startGameBtn.addEventListener('click', () => {
     startTurn();
 });
 
-// --- LÓGICA TURNOS Y TIEMPO ---
 function startTimer() {
     clearInterval(timerInterval);
     timeLeft = 50;
@@ -136,12 +131,10 @@ function startTimer() {
 
         if (timeLeft <= 0) {
             clearInterval(timerInterval);
-            scoringPanel.classList.add('hidden'); // Ocultar panel inline
-            
+            scoringPanel.classList.add('hidden'); 
             scoreBtn.classList.add('hidden');
             varBtn.classList.add('hidden');
             nextTurnBtn.classList.remove('hidden');
-            
             showRedCard();
         }
     }, 1000);
@@ -175,7 +168,7 @@ function updateSidebarScores() {
 function startTurn() {
     scoreBtn.classList.remove('hidden');
     nextTurnBtn.classList.add('hidden');
-    scoringPanel.classList.add('hidden'); // Cerrar el panel al cambiar turno
+    scoringPanel.classList.add('hidden'); 
     
     const currentGroup = groups[currentTurnIndex];
     document.getElementById('current-team-name').innerText = `${currentGroup.name}`;
@@ -207,11 +200,11 @@ varBtn.addEventListener('click', () => {
     varIndicator.classList.remove('hidden');
 });
 
-// ABRIR PANEL INTEGRADO EN LUGAR DE MODAL
+// ABRIR PANEL LATERAL
 scoreBtn.addEventListener('click', () => {
     scoringPanel.classList.remove('hidden');
-    scoreBtn.classList.add('hidden'); // Ocultar el botón para que no se vea doble
-    varBtn.classList.add('hidden'); // Ocultar VAR si empiezan a puntuar
+    scoreBtn.classList.add('hidden'); 
+    varBtn.classList.add('hidden'); 
     
     const scoringFields = document.getElementById('scoring-fields');
     scoringFields.innerHTML = ''; 
@@ -229,14 +222,11 @@ scoreBtn.addEventListener('click', () => {
     });
 });
 
-// CANCELAR EN EL PANEL INTEGRADO
+// CANCELAR PANEL LATERAL
 document.getElementById('cancel-score-btn').addEventListener('click', () => {
     scoringPanel.classList.add('hidden');
     scoreBtn.classList.remove('hidden');
-    // Devolver botón VAR si no lo habían usado
-    if (!groups[currentTurnIndex].usedVAR) {
-        varBtn.classList.remove('hidden');
-    }
+    if (!groups[currentTurnIndex].usedVAR) { varBtn.classList.remove('hidden'); }
 });
 
 function animateFloatingScore(points, groupId) {
@@ -280,8 +270,8 @@ document.getElementById('save-score-btn').addEventListener('click', () => {
     const currentGroup = groups[currentTurnIndex];
     currentGroup.score += turnPoints;
     
-    scoringPanel.classList.add('hidden'); // Ocultar el panel
-    nextTurnBtn.classList.remove('hidden'); // Mostrar siguiente turno
+    scoringPanel.classList.add('hidden'); 
+    nextTurnBtn.classList.remove('hidden'); 
 
     if (turnPoints === 0) { showRedCard(); } 
     else { animateFloatingScore(turnPoints, currentGroup.id); }

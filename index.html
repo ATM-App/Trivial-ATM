@@ -79,6 +79,13 @@
         <aside class="sidebar" id="sidebar-left">
             <h3>📊 Clasificación</h3>
             <div id="score-list-left" class="sidebar-list"></div>
+
+            <div id="scoring-panel" class="ios-card hidden scoring-panel-anim sidebar-scoring">
+                <h3 style="color: var(--atleti-blue); margin-bottom: 15px; text-align: center;">🎯 Asignar Puntos</h3>
+                <div id="scoring-fields"></div>
+                <button id="save-score-btn" class="ios-btn primary" style="margin-top: 15px;">💾 Guardar</button>
+                <button id="cancel-score-btn" class="ios-btn text-only">Cancelar</button>
+            </div>
         </aside>
 
         <main class="main-content">
@@ -101,14 +108,6 @@
             <div class="game-controls">
                 <button id="var-btn" class="btn-var">📺 VAR: DOBLE O NADA</button>
                 <button id="score-btn" class="ios-btn primary">➕ Añadir Puntaje</button>
-                
-                <div id="scoring-panel" class="ios-card hidden scoring-panel-anim" style="margin-top: 10px;">
-                    <h3 style="color: var(--atleti-blue); margin-bottom: 15px; text-align: center;">🎯 Asignar Puntos</h3>
-                    <div id="scoring-fields"></div>
-                    <button id="save-score-btn" class="ios-btn primary" style="margin-top: 15px;">💾 Guardar</button>
-                    <button id="cancel-score-btn" class="ios-btn text-only">Cancelar</button>
-                </div>
-
                 <button id="next-turn-btn" class="ios-btn secondary hidden">⏭️ Siguiente Turno</button>
             </div>
         </main>
