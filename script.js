@@ -9,8 +9,20 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
 const db = firebase.firestore();
 
+// --- INICIO DE SESIÓN ANÓNIMO ---
+// Esto se ejecuta de fondo nada más abrir la página.
+auth.signInAnonymously()
+    .then(() => {
+        console.log("Conectado de forma segura (Anónimo).");
+    })
+    .catch((error) => {
+        console.error("Error en autenticación:", error.message);
+    });
+
+// --- REGISTRO DEL SERVICE WORKER (PWA) ---
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').catch((err) => {
@@ -111,10 +123,7 @@ triggerRevealBtn.addEventListener('click', () => {
 startGameBtn.addEventListener('click', () => {
     groupRevealScreen.classList.remove('active');
     gameScreen.classList.add('active');
-    
-    if(groups.length > 6 && window.innerWidth >= 768) {
-        gameScreen.classList.add('use-both-sidebars');
-    }
+    if(groups.length > 6 && window.innerWidth >= 768) gameScreen.classList.add('use-both-sidebars');
     
     updateSidebarScores(); 
     startTurn();
@@ -339,12 +348,14 @@ function endGame() {
         if (Date.now() < end) requestAnimationFrame(frame);
     }());
 
+    // Guardado seguro gracias a la autenticación anónima
     db.collection("partidas").add({
         fecha: firebase.firestore.FieldValue.serverTimestamp(),
         ganador: sortedGroups[0] ? sortedGroups[0].name : "Ninguno",
         puntosGanador: sortedGroups[0] ? sortedGroups[0].score : 0,
         equipos: sortedGroups.map(g => ({ nombre: g.name, puntos: g.score, jugadores: g.members }))
-    });
+    }).then(() => console.log("Datos guardados con seguridad."))
+      .catch(e => console.error("Error al guardar:", e));
 }
 
 document.getElementById('restart-btn').addEventListener('click', () => {
