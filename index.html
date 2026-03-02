@@ -101,6 +101,14 @@
             <div class="game-controls">
                 <button id="var-btn" class="btn-var">📺 VAR: DOBLE O NADA</button>
                 <button id="score-btn" class="ios-btn primary">➕ Añadir Puntaje</button>
+                
+                <div id="scoring-panel" class="ios-card hidden scoring-panel-anim" style="margin-top: 10px;">
+                    <h3 style="color: var(--atleti-blue); margin-bottom: 15px; text-align: center;">🎯 Asignar Puntos</h3>
+                    <div id="scoring-fields"></div>
+                    <button id="save-score-btn" class="ios-btn primary" style="margin-top: 15px;">💾 Guardar</button>
+                    <button id="cancel-score-btn" class="ios-btn text-only">Cancelar</button>
+                </div>
+
                 <button id="next-turn-btn" class="ios-btn secondary hidden">⏭️ Siguiente Turno</button>
             </div>
         </main>
@@ -137,15 +145,6 @@
             </div>
         </div>
         <button id="restart-btn" class="ios-btn primary">🔄 Jugar de Nuevo</button>
-    </div>
-
-    <div id="score-modal" class="modal-overlay">
-        <div class="modal-content ios-card">
-            <h2 id="modal-title">🎯 Asignar Puntos</h2>
-            <div id="scoring-fields"></div>
-            <button id="save-score-btn" class="ios-btn primary" style="margin-top: 15px;">💾 Guardar</button>
-            <button id="close-modal-btn" class="ios-btn text-only">Cancelar</button>
-        </div>
     </div>
 
     <div id="red-card-modal" class="modal-overlay">

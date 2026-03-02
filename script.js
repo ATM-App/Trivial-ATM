@@ -1,4 +1,4 @@
-// --- CONFIGURACIÓN FIREBASE CLÁSICA (CDN) ---
+// --- CONFIGURACIÓN FIREBASE CLÁSICA ---
 const firebaseConfig = {
     apiKey: "AIzaSyDjq4rqhnuYt7I3PJoe_OuuZQo1G8L245I",
     authDomain: "trivial-atm.firebaseapp.com",
@@ -12,26 +12,21 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// --- INICIO DE SESIÓN ANÓNIMO ---
-// Esto se ejecuta de fondo nada más abrir la página.
-auth.signInAnonymously()
-    .then(() => {
-        console.log("Conectado de forma segura (Anónimo).");
-    })
-    .catch((error) => {
-        console.error("Error en autenticación:", error.message);
-    });
+auth.signInAnonymously().then(() => console.log("Conectado (Anónimo).")).catch(() => {});
 
-// --- REGISTRO DEL SERVICE WORKER (PWA) ---
 if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch((err) => {
-            console.log('Fallo al registrar el ServiceWorker: ', err);
-        });
-    });
+    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 }
 
-// --- DATOS Y CONFIGURACIÓN ---
+// --- PREVENIR RECARGA ACCIDENTAL OFICIAL ---
+window.addEventListener('beforeunload', function (e) {
+    // Solo mostramos alerta si la pantalla de juego está activa
+    if (document.getElementById('game-screen').classList.contains('active')) {
+        e.preventDefault(); 
+        e.returnValue = ''; // Requerido por navegadores modernos para mostrar el popup
+    }
+});
+
 const PLANTILLA_ATLETI = [
     "EQUIPO KOKE", "EQUIPO OBLAK", "EQUIPO GRIEZMANN", "EQUIPO GIMÉNEZ", 
     "EQUIPO JULIÁN ÁLVAREZ", "EQUIPO PUBILL", "EQUIPO LLORENTE", 
@@ -51,11 +46,8 @@ for (let i = 49; i <= 94; i++) { GAME_QUESTIONS.push({ id: i, type: 'equipo', im
 let players = []; let groups = []; let currentTurnIndex = 0;
 let remainingQuestions = [...GAME_QUESTIONS]; let currentQuestion = null;
 
-let timerInterval;
-let timeLeft = 50;
-let isVARActive = false;
+let timerInterval; let timeLeft = 50; let isVARActive = false;
 
-// --- DOM ELEMENTS ---
 const setupScreen = document.getElementById('setup-screen');
 const groupRevealScreen = document.getElementById('group-reveal-screen');
 const gameScreen = document.getElementById('game-screen');
@@ -69,6 +61,7 @@ const startGameBtn = document.getElementById('start-game-btn');
 
 const scoreBtn = document.getElementById('score-btn');
 const varBtn = document.getElementById('var-btn');
+const scoringPanel = document.getElementById('scoring-panel'); // NUEVO: Panel Integrado
 const varIndicator = document.getElementById('var-indicator');
 const nextTurnBtn = document.getElementById('next-turn-btn');
 
@@ -81,9 +74,7 @@ addPlayerBtn.addEventListener('click', () => {
     }
 });
 playerNameInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addPlayerBtn.click(); });
-function updatePlayersList() {
-    playersList.innerHTML = players.map((p, index) => `<li><span>${p}</span><button class="delete-btn" onclick="removePlayer(${index})">✕</button></li>`).join('');
-}
+function updatePlayersList() { playersList.innerHTML = players.map((p, index) => `<li><span>${p}</span><button class="delete-btn" onclick="removePlayer(${index})">✕</button></li>`).join(''); }
 window.removePlayer = function(index) { players.splice(index, 1); updatePlayersList(); };
 
 // --- CREAR GRUPOS ---
@@ -98,8 +89,7 @@ triggerRevealBtn.addEventListener('click', () => {
         let baseColor = TEAM_COLORS_BASE[i % TEAM_COLORS_BASE.length];
         return {
             id: i, name: shuffledNames[i], members: [], score: 0,
-            color: baseColor, bgColor: hexToPastel(baseColor),
-            usedVAR: false 
+            color: baseColor, bgColor: hexToPastel(baseColor), usedVAR: false 
         };
     });
 
@@ -135,24 +125,18 @@ function startTimer() {
     timeLeft = 50;
     const bar = document.getElementById('timer-bar');
     const text = document.getElementById('timer-text');
-    
-    bar.style.width = '100%';
-    bar.style.background = '#34C759'; 
-    text.innerText = '50s';
+    bar.style.width = '100%'; bar.style.background = '#34C759'; text.innerText = '50s';
     scoreBtn.disabled = false;
 
     timerInterval = setInterval(() => {
         timeLeft--;
-        let percentage = (timeLeft / 50) * 100;
-        bar.style.width = `${percentage}%`;
-        text.innerText = `${timeLeft}s`;
-
+        bar.style.width = `${(timeLeft / 50) * 100}%`; text.innerText = `${timeLeft}s`;
         if (timeLeft <= 15) bar.style.background = '#FF9500'; 
         if (timeLeft <= 5) bar.style.background = '#FF3B30'; 
 
         if (timeLeft <= 0) {
             clearInterval(timerInterval);
-            document.getElementById('score-modal').classList.remove('active');
+            scoringPanel.classList.add('hidden'); // Ocultar panel inline
             
             scoreBtn.classList.add('hidden');
             varBtn.classList.add('hidden');
@@ -191,6 +175,7 @@ function updateSidebarScores() {
 function startTurn() {
     scoreBtn.classList.remove('hidden');
     nextTurnBtn.classList.add('hidden');
+    scoringPanel.classList.add('hidden'); // Cerrar el panel al cambiar turno
     
     const currentGroup = groups[currentTurnIndex];
     document.getElementById('current-team-name').innerText = `${currentGroup.name}`;
@@ -198,14 +183,11 @@ function startTurn() {
     document.getElementById('current-turn-score').innerText = `(Acumulado: ${currentGroup.score} Puntos)`;
     document.getElementById('current-turn-score').style.color = currentGroup.color;
 
-    // Reset VAR
     isVARActive = false;
     varIndicator.classList.add('hidden');
-    if (!currentGroup.usedVAR) {
-        varBtn.classList.remove('hidden');
-    } else {
-        varBtn.classList.add('hidden');
-    }
+    
+    if (!currentGroup.usedVAR) { varBtn.classList.remove('hidden'); } 
+    else { varBtn.classList.add('hidden'); }
 
     updateSidebarScores();
     startTimer();
@@ -218,7 +200,6 @@ function startTurn() {
     document.getElementById('question-image').src = currentQuestion.img;
 }
 
-// --- EVENTOS VAR Y PUNTUACIÓN ---
 varBtn.addEventListener('click', () => {
     isVARActive = true;
     groups[currentTurnIndex].usedVAR = true;
@@ -226,8 +207,12 @@ varBtn.addEventListener('click', () => {
     varIndicator.classList.remove('hidden');
 });
 
+// ABRIR PANEL INTEGRADO EN LUGAR DE MODAL
 scoreBtn.addEventListener('click', () => {
-    document.getElementById('score-modal').classList.add('active');
+    scoringPanel.classList.remove('hidden');
+    scoreBtn.classList.add('hidden'); // Ocultar el botón para que no se vea doble
+    varBtn.classList.add('hidden'); // Ocultar VAR si empiezan a puntuar
+    
     const scoringFields = document.getElementById('scoring-fields');
     scoringFields.innerHTML = ''; 
     let fields = currentQuestion.type === 'pais' 
@@ -244,8 +229,14 @@ scoreBtn.addEventListener('click', () => {
     });
 });
 
-document.getElementById('close-modal-btn').addEventListener('click', () => {
-    document.getElementById('score-modal').classList.remove('active');
+// CANCELAR EN EL PANEL INTEGRADO
+document.getElementById('cancel-score-btn').addEventListener('click', () => {
+    scoringPanel.classList.add('hidden');
+    scoreBtn.classList.remove('hidden');
+    // Devolver botón VAR si no lo habían usado
+    if (!groups[currentTurnIndex].usedVAR) {
+        varBtn.classList.remove('hidden');
+    }
 });
 
 function animateFloatingScore(points, groupId) {
@@ -275,34 +266,25 @@ function animateFloatingScore(points, groupId) {
 function showRedCard() {
     const redCard = document.getElementById('red-card-modal');
     redCard.classList.add('active');
-    setTimeout(() => {
-        redCard.classList.remove('active');
-    }, 2500);
+    setTimeout(() => { redCard.classList.remove('active'); }, 2500);
 }
 
 document.getElementById('save-score-btn').addEventListener('click', () => {
     clearInterval(timerInterval); 
     
     let turnPoints = 0;
-    document.querySelectorAll('.score-select').forEach(sel => {
-        turnPoints += parseInt(sel.value);
-    });
+    document.querySelectorAll('.score-select').forEach(sel => { turnPoints += parseInt(sel.value); });
 
     if (isVARActive) turnPoints *= 2;
 
     const currentGroup = groups[currentTurnIndex];
     currentGroup.score += turnPoints;
     
-    document.getElementById('score-modal').classList.remove('active');
-    scoreBtn.classList.add('hidden');
-    varBtn.classList.add('hidden');
-    nextTurnBtn.classList.remove('hidden');
+    scoringPanel.classList.add('hidden'); // Ocultar el panel
+    nextTurnBtn.classList.remove('hidden'); // Mostrar siguiente turno
 
-    if (turnPoints === 0) {
-        showRedCard();
-    } else {
-        animateFloatingScore(turnPoints, currentGroup.id);
-    }
+    if (turnPoints === 0) { showRedCard(); } 
+    else { animateFloatingScore(turnPoints, currentGroup.id); }
 
     setTimeout(() => { updateSidebarScores(); }, 800); 
 });
@@ -313,15 +295,11 @@ nextTurnBtn.addEventListener('click', () => {
 });
 
 document.getElementById('end-game-btn').addEventListener('click', () => {
-    if (confirm('¿Finalizar partida y ver pódium?')) {
-        endGame();
-    }
+    if (confirm('¿Finalizar partida y ver pódium?')) { endGame(); }
 });
 
-// --- PÓDIUM Y FIREBASE ---
 function endGame() {
     clearInterval(timerInterval);
-    
     gameScreen.classList.remove('active');
     podiumScreen.classList.add('active');
     
@@ -348,14 +326,12 @@ function endGame() {
         if (Date.now() < end) requestAnimationFrame(frame);
     }());
 
-    // Guardado seguro gracias a la autenticación anónima
     db.collection("partidas").add({
         fecha: firebase.firestore.FieldValue.serverTimestamp(),
         ganador: sortedGroups[0] ? sortedGroups[0].name : "Ninguno",
         puntosGanador: sortedGroups[0] ? sortedGroups[0].score : 0,
         equipos: sortedGroups.map(g => ({ nombre: g.name, puntos: g.score, jugadores: g.members }))
-    }).then(() => console.log("Datos guardados con seguridad."))
-      .catch(e => console.error("Error al guardar:", e));
+    }).then(() => console.log("Datos guardados.")).catch(e => console.error("Error al guardar:", e));
 }
 
 document.getElementById('restart-btn').addEventListener('click', () => {
